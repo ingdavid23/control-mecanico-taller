@@ -1,0 +1,781 @@
+<!doctype html>
+<html lang="es" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestión de Taller Mecánico</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      box-sizing: border-box;
+    }
+    
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .animate-slide-in {
+      animation: slideIn 0.3s ease-out;
+    }
+    
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      #ticket-print, #ticket-print * {
+        visibility: visible;
+      }
+      #ticket-print {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+      }
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <script src="/_sdk/element_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full">
+  <div id="app" class="w-full h-full overflow-auto"></div>
+  <script>
+    const config = {
+      background_color: "#f0f4f8",
+      surface_color: "#ffffff",
+      text_color: "#1e293b",
+      primary_action_color: "#2563eb",
+      secondary_action_color: "#64748b",
+      font_family: "sans-serif",
+      font_size: 16,
+      nombre_taller: "Auto Servicio Express",
+      direccion_taller: "Av. Principal #123, Col. Centro",
+      telefono_taller: "+52 555 123 4567"
+    };
+
+    let allRecords = [];
+    let currentView = 'list';
+    let currentRecord = null;
+    const STORAGE_KEY = 'taller_mecanico_records';
+
+    // Funciones de almacenamiento local
+    function saveToLocalStorage() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(allRecords));
+      } catch (e) {
+        console.error('Error al guardar en localStorage:', e);
+      }
+    }
+
+    function loadFromLocalStorage() {
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+          allRecords = JSON.parse(stored);
+        }
+      } catch (e) {
+        console.error('Error al cargar desde localStorage:', e);
+        allRecords = [];
+      }
+    }
+
+    function generateId() {
+      return 'id_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    }
+
+    function createRecord(recordData) {
+      const newRecord = {
+        id: generateId(),
+        ...recordData
+      };
+      allRecords.push(newRecord);
+      saveToLocalStorage();
+      return newRecord;
+    }
+
+    function deleteRecord(id) {
+      allRecords = allRecords.filter(r => r.id !== id);
+      saveToLocalStorage();
+    }
+
+    function init() {
+      loadFromLocalStorage();
+      renderApp();
+    }
+
+    function renderApp() {
+      const app = document.getElementById('app');
+      
+      const bgColor = config.background_color;
+      const surfaceColor = config.surface_color;
+      const textColor = config.text_color;
+      const primaryColor = config.primary_action_color;
+      const secondaryColor = config.secondary_action_color;
+      const fontFamily = config.font_family;
+      const baseSize = config.font_size;
+      
+      document.body.style.backgroundColor = bgColor;
+      
+      if (currentView === 'list') {
+        app.innerHTML = `
+          <div class="w-full min-h-full" style="background-color: ${bgColor}; color: ${textColor}; font-family: ${fontFamily}, sans-serif; padding: 20px;">
+            <div class="max-w-6xl mx-auto">
+              <div class="mb-6">
+                <h1 style="font-size: ${baseSize * 2}px; font-weight: bold; margin-bottom: 8px;">🔧 ${config.nombre_taller}</h1>
+                <p style="font-size: ${baseSize * 0.9}px; color: ${textColor}; opacity: 0.7;">Gestión de Vehículos y Reparaciones</p>
+              </div>
+              
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <button id="btn-nuevo-vehiculo" style="background-color: ${primaryColor}; color: white; padding: 16px; border-radius: 12px; font-size: ${baseSize}px; font-weight: 600; transition: all 0.2s;">
+                  🚗 Registrar Vehículo
+                </button>
+                <button id="btn-nueva-reparacion" style="background-color: ${primaryColor}; color: white; padding: 16px; border-radius: 12px; font-size: ${baseSize}px; font-weight: 600; transition: all 0.2s;">
+                  🔧 Nueva Reparación
+                </button>
+              </div>
+              
+              <div id="records-container" class="space-y-4"></div>
+            </div>
+          </div>
+        `;
+        
+        const btnNuevoVehiculo = document.getElementById('btn-nuevo-vehiculo');
+        const btnNuevaReparacion = document.getElementById('btn-nueva-reparacion');
+        
+        btnNuevoVehiculo.addEventListener('mouseenter', (e) => {
+          e.target.style.transform = 'scale(1.02)';
+          e.target.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+        });
+        btnNuevoVehiculo.addEventListener('mouseleave', (e) => {
+          e.target.style.transform = 'scale(1)';
+          e.target.style.boxShadow = 'none';
+        });
+        btnNuevaReparacion.addEventListener('mouseenter', (e) => {
+          e.target.style.transform = 'scale(1.02)';
+          e.target.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+        });
+        btnNuevaReparacion.addEventListener('mouseleave', (e) => {
+          e.target.style.transform = 'scale(1)';
+          e.target.style.boxShadow = 'none';
+        });
+        
+        btnNuevoVehiculo.addEventListener('click', () => {
+          currentView = 'form-vehiculo';
+          currentRecord = null;
+          renderApp();
+        });
+        
+        btnNuevaReparacion.addEventListener('click', () => {
+          currentView = 'form-reparacion';
+          currentRecord = null;
+          renderApp();
+        });
+        
+        renderRecordsList();
+      } else if (currentView === 'form-vehiculo') {
+        renderVehiculoForm();
+      } else if (currentView === 'form-reparacion') {
+        renderReparacionForm();
+      } else if (currentView === 'ticket') {
+        renderTicket();
+      }
+    }
+
+    function renderRecordsList() {
+      const container = document.getElementById('records-container');
+      const surfaceColor = config.surface_color;
+      const textColor = config.text_color;
+      const primaryColor = config.primary_action_color;
+      const secondaryColor = config.secondary_action_color;
+      const baseSize = config.font_size;
+      
+      if (allRecords.length === 0) {
+        container.innerHTML = `
+          <div style="background-color: ${surfaceColor}; padding: 48px; border-radius: 12px; text-align: center;">
+            <div style="font-size: ${baseSize * 3}px; margin-bottom: 16px;">📋</div>
+            <p style="font-size: ${baseSize * 1.1}px; color: ${textColor}; opacity: 0.6;">No hay registros aún</p>
+            <p style="font-size: ${baseSize * 0.9}px; color: ${textColor}; opacity: 0.5; margin-top: 8px;">Comienza registrando un vehículo o una reparación</p>
+          </div>
+        `;
+        return;
+      }
+      
+      const vehiculos = allRecords.filter(r => r.tipo === 'vehiculo');
+      const reparaciones = allRecords.filter(r => r.tipo === 'reparacion');
+      
+      let html = '';
+      
+      if (vehiculos.length > 0) {
+        html += `<div style="margin-bottom: 24px;">
+          <h2 style="font-size: ${baseSize * 1.5}px; font-weight: 600; margin-bottom: 16px; color: ${textColor};">🚗 Vehículos Registrados (${vehiculos.length})</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">`;
+        
+        vehiculos.forEach(record => {
+          html += `
+            <div class="record-card" data-id="${record.id}" style="background-color: ${surfaceColor}; padding: 20px; border-radius: 12px; border: 2px solid transparent; transition: all 0.2s;">
+              <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
+                <div>
+                  <div style="font-size: ${baseSize * 1.2}px; font-weight: 600; color: ${textColor};">${record.placa}</div>
+                  <div style="font-size: ${baseSize * 0.9}px; color: ${textColor}; opacity: 0.7; margin-top: 4px;">${record.marca} ${record.modelo} ${record.year}</div>
+                </div>
+                <button class="delete-btn" data-id="${record.id}" style="color: ${secondaryColor}; padding: 8px; border-radius: 8px; font-size: ${baseSize * 0.85}px;">🗑️</button>
+              </div>
+              <div style="font-size: ${baseSize * 0.85}px; color: ${textColor}; opacity: 0.6;">
+                <div>🎨 ${record.color}</div>
+                <div>👤 ${record.cliente}</div>
+                <div>📞 ${record.telefono}</div>
+              </div>
+            </div>
+          `;
+        });
+        
+        html += `</div></div>`;
+      }
+      
+      if (reparaciones.length > 0) {
+        html += `<div>
+          <h2 style="font-size: ${baseSize * 1.5}px; font-weight: 600; margin-bottom: 16px; color: ${textColor};">🔧 Reparaciones (${reparaciones.length})</h2>
+          <div class="space-y-3">`;
+        
+        reparaciones.forEach(record => {
+          const estadoColors = {
+            'En Proceso': '#f59e0b',
+            'Completada': '#10b981',
+            'Pendiente': '#ef4444'
+          };
+          const estadoColor = estadoColors[record.estado] || '#6b7280';
+          
+          html += `
+            <div class="record-card" data-id="${record.id}" style="background-color: ${surfaceColor}; padding: 20px; border-radius: 12px; border: 2px solid transparent; transition: all 0.2s;">
+              <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
+                <div style="flex: 1;">
+                  <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                    <div style="font-size: ${baseSize * 1.1}px; font-weight: 600; color: ${textColor};">${record.placa} - ${record.marca} ${record.modelo}</div>
+                    <span style="background-color: ${estadoColor}; color: white; padding: 4px 12px; border-radius: 16px; font-size: ${baseSize * 0.75}px; font-weight: 600;">${record.estado}</span>
+                  </div>
+                  <div style="font-size: ${baseSize * 0.85}px; color: ${textColor}; opacity: 0.7;">
+                    📅 ${new Date(record.fecha).toLocaleDateString('es-ES')} | 👤 ${record.cliente} | 🔧 ${record.mecanico}
+                  </div>
+                  <div style="font-size: ${baseSize * 0.9}px; color: ${textColor}; margin-top: 8px;">${record.descripcion}</div>
+                  <div style="font-size: ${baseSize * 1.1}px; font-weight: 600; color: ${primaryColor}; margin-top: 8px;">Total: $${record.total.toFixed(2)}</div>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                  <button class="ticket-btn" data-id="${record.id}" style="background-color: ${primaryColor}; color: white; padding: 8px 16px; border-radius: 8px; font-size: ${baseSize * 0.85}px; font-weight: 600;">📄 Ticket</button>
+                  <button class="delete-btn" data-id="${record.id}" style="color: ${secondaryColor}; padding: 8px; border-radius: 8px; font-size: ${baseSize * 0.85}px;">🗑️</button>
+                </div>
+              </div>
+            </div>
+          `;
+        });
+        
+        html += `</div></div>`;
+      }
+      
+      container.innerHTML = html;
+      
+      document.querySelectorAll('.record-card').forEach(card => {
+        card.addEventListener('mouseenter', (e) => {
+          e.currentTarget.style.borderColor = primaryColor;
+          e.currentTarget.style.transform = 'translateY(-2px)';
+          e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
+        });
+        card.addEventListener('mouseleave', (e) => {
+          e.currentTarget.style.borderColor = 'transparent';
+          e.currentTarget.style.transform = 'translateY(0)';
+          e.currentTarget.style.boxShadow = 'none';
+        });
+      });
+      
+      document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const id = e.currentTarget.getAttribute('data-id');
+          
+          const confirmBtn = e.currentTarget;
+          const originalContent = confirmBtn.innerHTML;
+          confirmBtn.innerHTML = '✓ Confirmar';
+          confirmBtn.style.backgroundColor = '#ef4444';
+          confirmBtn.style.color = 'white';
+          confirmBtn.style.padding = '8px 12px';
+          
+          const cancelTimeout = setTimeout(() => {
+            confirmBtn.innerHTML = originalContent;
+            confirmBtn.style.backgroundColor = 'transparent';
+            confirmBtn.style.color = secondaryColor;
+            confirmBtn.style.padding = '8px';
+          }, 3000);
+          
+          const confirmHandler = () => {
+            clearTimeout(cancelTimeout);
+            deleteRecord(id);
+            renderApp();
+          };
+          
+          confirmBtn.onclick = confirmHandler;
+        });
+      });
+      
+      document.querySelectorAll('.ticket-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const id = e.currentTarget.getAttribute('data-id');
+          currentRecord = allRecords.find(r => r.id === id);
+          currentView = 'ticket';
+          renderApp();
+        });
+      });
+    }
+
+    function renderVehiculoForm() {
+      const app = document.getElementById('app');
+      const bgColor = config.background_color;
+      const surfaceColor = config.surface_color;
+      const textColor = config.text_color;
+      const primaryColor = config.primary_action_color;
+      const secondaryColor = config.secondary_action_color;
+      const fontFamily = config.font_family;
+      const baseSize = config.font_size;
+      
+      app.innerHTML = `
+        <div class="w-full min-h-full" style="background-color: ${bgColor}; color: ${textColor}; font-family: ${fontFamily}, sans-serif; padding: 20px;">
+          <div class="max-w-2xl mx-auto">
+            <div class="mb-6">
+              <button id="btn-back" style="color: ${secondaryColor}; font-size: ${baseSize * 0.9}px; margin-bottom: 12px;">← Volver</button>
+              <h1 style="font-size: ${baseSize * 1.8}px; font-weight: bold;">🚗 Registrar Vehículo</h1>
+            </div>
+            
+            <form id="vehiculo-form" style="background-color: ${surfaceColor}; padding: 24px; border-radius: 12px;">
+              <div class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label for="marca" style="display: block; font-size: ${baseSize * 0.9}px; font-weight: 600; margin-bottom: 8px; color: ${textColor};">Marca *</label>
+                    <input type="text" id="marca" required style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: ${baseSize}px; color: ${textColor};">
+                  </div>
+                  <div>
+                    <label for="modelo" style="display: block; font-size: ${baseSize * 0.9}px; font-weight: 600; margin-bottom: 8px; color: ${textColor};">Modelo *</label>
+                    <input type="text" id="modelo" required style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: ${baseSize}px; color: ${textColor};">
+                  </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label for="year" style="display: block; font-size: ${baseSize * 0.9}px; font-weight: 600; margin-bottom: 8px; color: ${textColor};">Año *</label>
+                    <input type="text" id="year" required style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: ${baseSize}px; color: ${textColor};">
+                  </div>
+                  <div>
+                    <label for="color" style="display: block; font-size: ${baseSize * 0.9}px; font-weight: 600; margin-bottom: 8px; color: ${textColor};">Color *</label>
+                    <input type="text" id="color" required style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: ${baseSize}px; color: ${textColor};">
+                  </div>
+                </div>
+                
+                <div>
+                  <label for="cliente" style="display: block; font-size: ${baseSize * 0.9}px; font-weight: 600; margin-bottom: 8px; color: ${textColor};">Cliente *</label>
+                  <input type="text" id="cliente" required style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: ${baseSize}px; color: ${textColor};">
+                </div>
+                
+                <div>
+                  <label for="telefono" style="display: block; font-size: ${baseSize * 0.9}px; font-weight: 600; margin-bottom: 8px; color: ${textColor};">Teléfono *</label>
+                  <input type="tel" id="telefono" required style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: ${baseSize}px; color: ${textColor};">
+                </div>
+              </div>
+              
+              <button type="submit" id="submit-btn" style="width: 100%; background-color: ${primaryColor}; color: white; padding: 16px; border-radius: 8px; font-size: ${baseSize * 1.1}px; font-weight: 600; margin-top: 24px; transition: all 0.2s;">
+                Guardar Vehículo
+              </button>
+            </form>
+          </div>
+        </div>
+      `;
+      
+      document.getElementById('btn-back').addEventListener('click', () => {
+        currentView = 'list';
+        renderApp();
+      });
+      
+      const submitBtn = document.getElementById('submit-btn');
+      submitBtn.addEventListener('mouseenter', (e) => {
+        e.target.style.transform = 'scale(1.02)';
+      });
+      submitBtn.addEventListener('mouseleave', (e) => {
+        e.target.style.transform = 'scale(1)';
+      });
+      
+      document.getElementById('vehiculo-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        const vehiculoData = {
+          tipo: 'vehiculo',
+          fecha: new Date().toISOString(),
+          placa: `${document.getElementById('marca').value.substring(0, 3).toUpperCase()}-${Date.now().toString().slice(-4)}`,
+          marca: document.getElementById('marca').value,
+          modelo: document.getElementById('modelo').value,
+          year: document.getElementById('year').value,
+          color: document.getElementById('color').value,
+          cliente: document.getElementById('cliente').value,
+          telefono: document.getElementById('telefono').value,
+          kilometraje: '',
+          mecanico: '',
+          descripcion: '',
+          diagnostico: '',
+          reparaciones: '',
+          repuestos: '',
+          manoObra: 0,
+          costoRepuestos: 0,
+          total: 0,
+          estado: ''
+        };
+        
+        createRecord(vehiculoData);
+        currentView = 'list';
+        renderApp();
+      });
+    }
+
+    function renderReparacionForm() {
+      const app = document.getElementById('app');
+      const bgColor = config.background_color;
+      const surfaceColor = config.surface_color;
+      const textColor = config.text_color;
+      const primaryColor = config.primary_action_color;
+      const secondaryColor = config.secondary_action_color;
+      const fontFamily = config.font_family;
+      const baseSize = config.font_size;
+      
+      const vehiculos = allRecords.filter(r => r.tipo === 'vehiculo');
+      
+      app.innerHTML = `
+        <div class="w-full min-h-full" style="background-color: ${bgColor}; color: ${textColor}; font-family: ${fontFamily}, sans-serif; padding: 20px;">
+          <div class="max-w-3xl mx-auto">
+            <div class="mb-6">
+              <button id="btn-back" style="color: ${secondaryColor}; font-size: ${baseSize * 0.9}px; margin-bottom: 12px;">← Volver</button>
+              <h1 style="font-size: ${baseSize * 1.8}px; font-weight: bold;">🔧 Nueva Reparación</h1>
+            </div>
+            
+            ${vehiculos.length === 0 ? `
+              <div style="background-color: ${surfaceColor}; padding: 32px; border-radius: 12px; text-align: center;">
+                <div style="font-size: ${baseSize * 2}px; margin-bottom: 16px;">🚗</div>
+                <p style="font-size: ${baseSize * 1.1}px; color: ${textColor}; margin-bottom: 8px;">No hay vehículos registrados</p>
+                <p style="font-size: ${baseSize * 0.9}px; color: ${textColor}; opacity: 0.6;">Primero debes registrar un vehículo antes de crear una reparación</p>
+                <button id="btn-registrar-vehiculo" style="background-color: ${primaryColor}; color: white; padding: 12px 24px; border-radius: 8px; font-size: ${baseSize}px; font-weight: 600; margin-top: 16px;">Registrar Vehículo</button>
+              </div>
+            ` : `
+            <form id="reparacion-form" style="background-color: ${surfaceColor}; padding: 24px; border-radius: 12px;">
+              <div class="space-y-4">
+                <div>
+                  <label for="vehiculo-select" style="display: block; font-size: ${baseSize * 0.9}px; font-weight: 600; margin-bottom: 8px; color: ${textColor};">Seleccionar Vehículo *</label>
+                  <select id="vehiculo-select" required style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: ${baseSize}px; color: ${textColor};">
+                    <option value="">-- Seleccione un vehículo --</option>
+                    ${vehiculos.map(v => `
+                      <option value="${v.id}">${v.placa} - ${v.marca} ${v.modelo} (${v.cliente})</option>
+                    `).join('')}
+                  </select>
+                </div>
+                
+                <div id="vehiculo-info" style="display: none; background-color: ${bgColor}; padding: 16px; border-radius: 8px; font-size: ${baseSize * 0.9}px;">
+                  <div style="font-weight: 600; margin-bottom: 8px; color: ${textColor};">Datos del Vehículo</div>
+                  <div id="vehiculo-details" style="color: ${textColor}; opacity: 0.8;"></div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label for="fecha" style="display: block; font-size: ${baseSize * 0.9}px; font-weight: 600; margin-bottom: 8px; color: ${textColor};">Fecha *</label>
+                    <input type="date" id="fecha" required style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: ${baseSize}px; color: ${textColor};">
+                  </div>
+                  <div>
+                    <label for="mecanico" style="display: block; font-size: ${baseSize * 0.9}px; font-weight: 600; margin-bottom: 8px; color: ${textColor};">Mecánico *</label>
+                    <input type="text" id="mecanico" required style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: ${baseSize}px; color: ${textColor};">
+                  </div>
+                </div>
+                
+                <div>
+                  <label for="descripcion" style="display: block; font-size: ${baseSize * 0.9}px; font-weight: 600; margin-bottom: 8px; color: ${textColor};">Descripción del Problema *</label>
+                  <textarea id="descripcion" required rows="3" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: ${baseSize}px; color: ${textColor};"></textarea>
+                </div>
+                
+                <div>
+                  <label for="diagnostico" style="display: block; font-size: ${baseSize * 0.9}px; font-weight: 600; margin-bottom: 8px; color: ${textColor};">Diagnóstico *</label>
+                  <textarea id="diagnostico" required rows="3" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: ${baseSize}px; color: ${textColor};"></textarea>
+                </div>
+                
+                <div>
+                  <label for="reparaciones" style="display: block; font-size: ${baseSize * 0.9}px; font-weight: 600; margin-bottom: 8px; color: ${textColor};">Reparaciones Realizadas *</label>
+                  <textarea id="reparaciones" required rows="3" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: ${baseSize}px; color: ${textColor};"></textarea>
+                </div>
+                
+                <div>
+                  <label for="repuestos" style="display: block; font-size: ${baseSize * 0.9}px; font-weight: 600; margin-bottom: 8px; color: ${textColor};">Repuestos Utilizados</label>
+                  <textarea id="repuestos" rows="2" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: ${baseSize}px; color: ${textColor};"></textarea>
+                </div>
+                
+                <div class="grid grid-cols-3 gap-4">
+                  <div>
+                    <label for="manoObra" style="display: block; font-size: ${baseSize * 0.9}px; font-weight: 600; margin-bottom: 8px; color: ${textColor};">Mano de Obra *</label>
+                    <input type="number" id="manoObra" required step="0.01" min="0" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: ${baseSize}px; color: ${textColor};">
+                  </div>
+                  <div>
+                    <label for="costoRepuestos" style="display: block; font-size: ${baseSize * 0.9}px; font-weight: 600; margin-bottom: 8px; color: ${textColor};">Costo Repuestos</label>
+                    <input type="number" id="costoRepuestos" step="0.01" min="0" value="0" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: ${baseSize}px; color: ${textColor};">
+                  </div>
+                  <div>
+                    <label for="estado" style="display: block; font-size: ${baseSize * 0.9}px; font-weight: 600; margin-bottom: 8px; color: ${textColor};">Estado *</label>
+                    <select id="estado" required style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: ${baseSize}px; color: ${textColor};">
+                      <option value="Pendiente">Pendiente</option>
+                      <option value="En Proceso">En Proceso</option>
+                      <option value="Completada">Completada</option>
+                    </select>
+                  </div>
+                </div>
+                
+                <div style="background-color: ${bgColor}; padding: 16px; border-radius: 8px;">
+                  <div style="font-size: ${baseSize * 0.9}px; font-weight: 600; color: ${textColor}; margin-bottom: 8px;">Total a Pagar</div>
+                  <div id="total-display" style="font-size: ${baseSize * 2}px; font-weight: bold; color: ${primaryColor};">$0.00</div>
+                </div>
+              </div>
+              
+              <button type="submit" id="submit-btn" style="width: 100%; background-color: ${primaryColor}; color: white; padding: 16px; border-radius: 8px; font-size: ${baseSize * 1.1}px; font-weight: 600; margin-top: 24px; transition: all 0.2s;">
+                Guardar Reparación
+              </button>
+            </form>
+            `}
+          </div>
+        </div>
+      `;
+      
+      document.getElementById('btn-back').addEventListener('click', () => {
+        currentView = 'list';
+        renderApp();
+      });
+      
+      if (vehiculos.length === 0) {
+        const btnRegistrar = document.getElementById('btn-registrar-vehiculo');
+        if (btnRegistrar) {
+          btnRegistrar.addEventListener('click', () => {
+            currentView = 'form-vehiculo';
+            renderApp();
+          });
+        }
+        return;
+      }
+      
+      const fechaInput = document.getElementById('fecha');
+      fechaInput.valueAsDate = new Date();
+      
+      const vehiculoSelect = document.getElementById('vehiculo-select');
+      const vehiculoInfo = document.getElementById('vehiculo-info');
+      const vehiculoDetails = document.getElementById('vehiculo-details');
+      
+      vehiculoSelect.addEventListener('change', (e) => {
+        const selectedId = e.target.value;
+        if (selectedId) {
+          const vehiculo = vehiculos.find(v => v.id === selectedId);
+          if (vehiculo) {
+            vehiculoInfo.style.display = 'block';
+            vehiculoDetails.innerHTML = `
+              <div>📋 Placa: <strong>${vehiculo.placa}</strong></div>
+              <div>🚗 ${vehiculo.marca} ${vehiculo.modelo} (${vehiculo.year})</div>
+              <div>🎨 Color: ${vehiculo.color}</div>
+              <div>👤 Cliente: ${vehiculo.cliente}</div>
+              <div>📞 Teléfono: ${vehiculo.telefono}</div>
+            `;
+          }
+        } else {
+          vehiculoInfo.style.display = 'none';
+        }
+      });
+      
+      function updateTotal() {
+        const manoObra = parseFloat(document.getElementById('manoObra').value) || 0;
+        const costoRepuestos = parseFloat(document.getElementById('costoRepuestos').value) || 0;
+        const total = manoObra + costoRepuestos;
+        document.getElementById('total-display').textContent = `$${total.toFixed(2)}`;
+      }
+      
+      document.getElementById('manoObra').addEventListener('input', updateTotal);
+      document.getElementById('costoRepuestos').addEventListener('input', updateTotal);
+      
+      const submitBtn = document.getElementById('submit-btn');
+      submitBtn.addEventListener('mouseenter', (e) => {
+        e.target.style.transform = 'scale(1.02)';
+      });
+      submitBtn.addEventListener('mouseleave', (e) => {
+        e.target.style.transform = 'scale(1)';
+      });
+      
+      document.getElementById('reparacion-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        const selectedVehiculo = vehiculos.find(v => v.id === vehiculoSelect.value);
+        
+        if (!selectedVehiculo) {
+          return;
+        }
+        
+        const manoObra = parseFloat(document.getElementById('manoObra').value) || 0;
+        const costoRepuestos = parseFloat(document.getElementById('costoRepuestos').value) || 0;
+        
+        const reparacionData = {
+          tipo: 'reparacion',
+          fecha: new Date(document.getElementById('fecha').value).toISOString(),
+          placa: selectedVehiculo.placa,
+          marca: selectedVehiculo.marca,
+          modelo: selectedVehiculo.modelo,
+          year: selectedVehiculo.year,
+          color: selectedVehiculo.color,
+          cliente: selectedVehiculo.cliente,
+          telefono: selectedVehiculo.telefono,
+          mecanico: document.getElementById('mecanico').value,
+          descripcion: document.getElementById('descripcion').value,
+          diagnostico: document.getElementById('diagnostico').value,
+          reparaciones: document.getElementById('reparaciones').value,
+          repuestos: document.getElementById('repuestos').value,
+          manoObra: manoObra,
+          costoRepuestos: costoRepuestos,
+          total: manoObra + costoRepuestos,
+          estado: document.getElementById('estado').value,
+          kilometraje: ''
+        };
+        
+        createRecord(reparacionData);
+        currentView = 'list';
+        renderApp();
+      });
+    }
+
+    function renderTicket() {
+      const app = document.getElementById('app');
+      const bgColor = config.background_color;
+      const secondaryColor = config.secondary_action_color;
+      const primaryColor = config.primary_action_color;
+      const fontFamily = config.font_family;
+      const baseSize = config.font_size;
+      
+      if (!currentRecord) {
+        currentView = 'list';
+        renderApp();
+        return;
+      }
+      
+      app.innerHTML = `
+        <div class="w-full min-h-full" style="background-color: ${bgColor}; padding: 20px; font-family: ${fontFamily}, sans-serif;">
+          <div class="max-w-4xl mx-auto">
+            <div class="mb-6">
+              <button id="btn-back" style="color: ${secondaryColor}; font-size: ${baseSize * 0.9}px; margin-bottom: 12px;">← Volver</button>
+              <div style="display: flex; gap: 12px;">
+                <button id="btn-capture" style="background-color: ${primaryColor}; color: white; padding: 12px 24px; border-radius: 8px; font-size: ${baseSize}px; font-weight: 600;">📸 Capturar Pantalla</button>
+                <button id="btn-print" style="background-color: ${secondaryColor}; color: white; padding: 12px 24px; border-radius: 8px; font-size: ${baseSize}px; font-weight: 600;">🖨️ Imprimir</button>
+              </div>
+            </div>
+            
+            <div id="ticket-print" style="background-color: white; color: #000; max-width: 400px; margin: 0 auto; padding: 32px; font-family: 'Courier New', monospace;">
+              <div style="text-align: center; border-bottom: 2px dashed #000; padding-bottom: 16px; margin-bottom: 16px;">
+                <div style="font-size: 24px; font-weight: bold; margin-bottom: 8px;">${config.nombre_taller}</div>
+                <div style="font-size: 14px; margin-bottom: 4px;">${config.direccion_taller}</div>
+                <div style="font-size: 14px;">Tel: ${config.telefono_taller}</div>
+              </div>
+              
+              <div style="text-align: center; margin-bottom: 16px;">
+                <div style="font-size: 18px; font-weight: bold;">ORDEN DE REPARACIÓN</div>
+                <div style="font-size: 14px; margin-top: 4px;">Fecha: ${new Date(currentRecord.fecha).toLocaleDateString('es-ES')}</div>
+              </div>
+              
+              <div style="border-bottom: 1px dashed #000; padding-bottom: 12px; margin-bottom: 12px;">
+                <div style="margin-bottom: 8px;"><strong>DATOS DEL CLIENTE</strong></div>
+                <div style="font-size: 14px;">Cliente: ${currentRecord.cliente}</div>
+                <div style="font-size: 14px;">Teléfono: ${currentRecord.telefono}</div>
+              </div>
+              
+              <div style="border-bottom: 1px dashed #000; padding-bottom: 12px; margin-bottom: 12px;">
+                <div style="margin-bottom: 8px;"><strong>DATOS DEL VEHÍCULO</strong></div>
+                <div style="font-size: 14px;">Placa: ${currentRecord.placa}</div>
+                <div style="font-size: 14px;">Marca: ${currentRecord.marca}</div>
+                <div style="font-size: 14px;">Modelo: ${currentRecord.modelo}</div>
+                <div style="font-size: 14px;">Año: ${currentRecord.year}</div>
+                <div style="font-size: 14px;">Color: ${currentRecord.color}</div>
+              </div>
+              
+              <div style="border-bottom: 1px dashed #000; padding-bottom: 12px; margin-bottom: 12px;">
+                <div style="margin-bottom: 8px;"><strong>SERVICIO REALIZADO</strong></div>
+                <div style="font-size: 14px; margin-bottom: 8px;"><strong>Problema:</strong></div>
+                <div style="font-size: 14px; margin-bottom: 12px;">${currentRecord.descripcion}</div>
+                <div style="font-size: 14px; margin-bottom: 8px;"><strong>Diagnóstico:</strong></div>
+                <div style="font-size: 14px; margin-bottom: 12px;">${currentRecord.diagnostico}</div>
+                <div style="font-size: 14px; margin-bottom: 8px;"><strong>Reparaciones:</strong></div>
+                <div style="font-size: 14px;">${currentRecord.reparaciones}</div>
+              </div>
+              
+              ${currentRecord.repuestos ? `
+              <div style="border-bottom: 1px dashed #000; padding-bottom: 12px; margin-bottom: 12px;">
+                <div style="margin-bottom: 8px;"><strong>REPUESTOS</strong></div>
+                <div style="font-size: 14px;">${currentRecord.repuestos}</div>
+              </div>
+              ` : ''}
+              
+              <div style="border-bottom: 2px dashed #000; padding-bottom: 12px; margin-bottom: 12px;">
+                <div style="margin-bottom: 8px;"><strong>DETALLE DE COSTOS</strong></div>
+                <div style="display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 4px;">
+                  <span>Mano de Obra:</span>
+                  <span>$${currentRecord.manoObra.toFixed(2)}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 4px;">
+                  <span>Repuestos:</span>
+                  <span>$${currentRecord.costoRepuestos.toFixed(2)}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 18px; font-weight: bold; margin-top: 8px;">
+                  <span>TOTAL:</span>
+                  <span>$${currentRecord.total.toFixed(2)}</span>
+                </div>
+              </div>
+              
+              <div style="margin-bottom: 16px;">
+                <div style="font-size: 14px;">Mecánico: ${currentRecord.mecanico}</div>
+                <div style="font-size: 14px;">Estado: ${currentRecord.estado}</div>
+              </div>
+              
+              <div style="text-align: center; font-size: 12px; color: #666; margin-top: 16px;">
+                <div>¡Gracias por su confianza!</div>
+                <div style="margin-top: 8px;">Este documento es un comprobante de servicio</div>
+              </div>
+            </div>
+            
+            <div id="capture-message" style="display: none; background-color: ${primaryColor}; color: white; padding: 16px; border-radius: 8px; text-align: center; margin-top: 16px; font-size: ${baseSize}px;"></div>
+          </div>
+        </div>
+      `;
+      
+      document.getElementById('btn-back').addEventListener('click', () => {
+        currentView = 'list';
+        currentRecord = null;
+        renderApp();
+      });
+      
+      document.getElementById('btn-capture').addEventListener('click', () => {
+        const message = document.getElementById('capture-message');
+        message.style.display = 'block';
+        message.textContent = '📸 Para capturar la pantalla, usa las herramientas de captura de tu dispositivo (Windows: Win+Shift+S, Mac: Cmd+Shift+4)';
+        
+        setTimeout(() => {
+          message.style.display = 'none';
+        }, 5000);
+      });
+      
+      document.getElementById('btn-print').addEventListener('click', () => {
+        window.print();
+      });
+    }
+
+    // Iniciar la aplicación cuando el DOM esté listo
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9b290fc2b7566bf5',t:'MTc2NjUwNTUxOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
