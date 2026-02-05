@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="es" class="h-full">
- <head>
+
+<head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gestión de Taller Mecánico</title>
@@ -9,29 +10,33 @@
     body {
       box-sizing: border-box;
     }
-    
+
     @keyframes slideIn {
       from {
         opacity: 0;
         transform: translateY(-10px);
       }
+
       to {
         opacity: 1;
         transform: translateY(0);
       }
     }
-    
+
     .animate-slide-in {
       animation: slideIn 0.3s ease-out;
     }
-    
+
     @media print {
       body * {
         visibility: hidden;
       }
-      #ticket-print, #ticket-print * {
+
+      #ticket-print,
+      #ticket-print * {
         visibility: visible;
       }
+
       #ticket-print {
         position: absolute;
         left: 0;
@@ -40,11 +45,16 @@
       }
     }
   </style>
-  <style>@view-transition { navigation: auto; }</style>
+  <style>
+    @view-transition {
+      navigation: auto;
+    }
+  </style>
   <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
   <script src="/_sdk/element_sdk.js" type="text/javascript"></script>
- </head>
- <body class="h-full">
+</head>
+
+<body class="h-full">
   <div id="app" class="w-full h-full overflow-auto"></div>
   <script>
     const config = {
@@ -112,7 +122,7 @@
 
     function renderApp() {
       const app = document.getElementById('app');
-      
+
       const bgColor = config.background_color;
       const surfaceColor = config.surface_color;
       const textColor = config.text_color;
@@ -120,9 +130,9 @@
       const secondaryColor = config.secondary_action_color;
       const fontFamily = config.font_family;
       const baseSize = config.font_size;
-      
+
       document.body.style.backgroundColor = bgColor;
-      
+
       if (currentView === 'list') {
         app.innerHTML = `
           <div class="w-full min-h-full" style="background-color: ${bgColor}; color: ${textColor}; font-family: ${fontFamily}, sans-serif; padding: 20px;">
@@ -148,10 +158,10 @@
             </div>
           </div>
         `;
-        
+
         const btnNuevoVehiculo = document.getElementById('btn-nuevo-vehiculo');
         const btnNuevaReparacion = document.getElementById('btn-nueva-reparacion');
-        
+
         btnNuevoVehiculo.addEventListener('mouseenter', (e) => {
           e.target.style.transform = 'scale(1.02)';
           e.target.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
@@ -168,19 +178,19 @@
           e.target.style.transform = 'scale(1)';
           e.target.style.boxShadow = 'none';
         });
-        
+
         btnNuevoVehiculo.addEventListener('click', () => {
           currentView = 'form-vehiculo';
           currentRecord = null;
           renderApp();
         });
-        
+
         btnNuevaReparacion.addEventListener('click', () => {
           currentView = 'form-reparacion';
           currentRecord = null;
           renderApp();
         });
-        
+
         const btnAgenda = document.getElementById('btn-agenda');
         btnAgenda.addEventListener('mouseenter', (e) => {
           e.target.style.transform = 'scale(1.02)';
@@ -194,7 +204,7 @@
           currentView = 'agenda';
           renderApp();
         });
-        
+
         renderRecordsList();
       } else if (currentView === 'form-vehiculo') {
         renderVehiculoForm();
@@ -214,28 +224,28 @@
       const primaryColor = config.primary_action_color;
       const secondaryColor = config.secondary_action_color;
       const baseSize = config.font_size;
-      
+
       if (allRecords.length === 0) {
         container.innerHTML = `
           <div style="background-color: ${surfaceColor}; padding: 48px; border-radius: 12px; text-align: center;">
-            <div style="font-size: ${baseSize * 3}px; margin-bottom: 16px;">📋</div>
+            <div style="font-size: ${baseSize * 3}px; margin-bottom: 16px;"></div>
             <p style="font-size: ${baseSize * 1.1}px; color: ${textColor}; opacity: 0.6;">No hay registros aún</p>
             <p style="font-size: ${baseSize * 0.9}px; color: ${textColor}; opacity: 0.5; margin-top: 8px;">Comienza registrando un vehículo o una reparacion</p>
           </div>
         `;
         return;
       }
-      
+
       const vehiculos = allRecords.filter(r => r.tipo === 'vehiculo');
       const reparaciones = allRecords.filter(r => r.tipo === 'reparacion' && r.diagnostico && r.reparaciones);
-      
+
       let html = '';
-      
+
       if (vehiculos.length > 0) {
         html += `<div style="margin-bottom: 24px;">
           <h2 style="font-size: ${baseSize * 1.5}px; font-weight: 600; margin-bottom: 16px; color: ${textColor};">🚗 Vehículos Registrados (${vehiculos.length})</h2>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">`;
-        
+
         vehiculos.forEach(record => {
           html += `
             <div class="record-card" data-id="${record.id}" style="background-color: ${surfaceColor}; padding: 20px; border-radius: 12px; border: 2px solid transparent; transition: all 0.2s;">
@@ -254,15 +264,15 @@
             </div>
           `;
         });
-        
+
         html += `</div></div>`;
       }
-      
+
       if (reparaciones.length > 0) {
         html += `<div>
-          <h2 style="font-size: ${baseSize * 1.5}px; font-weight: 600; margin-bottom: 16px; color: ${textColor};">Reparaciones (${reparaciones.length})</h2>
+          <h2 style="font-size: ${baseSize * 1.5}px; font-weight: 600; margin-bottom: 16px; color: ${textColor};">🛠️ Reparaciones (${reparaciones.length})</h2>
           <div class="space-y-3">`;
-        
+
         reparaciones.forEach(record => {
           const estadoColors = {
             'En Proceso': '#f59e0b',
@@ -270,7 +280,7 @@
             'Pendiente': '#ef4444'
           };
           const estadoColor = estadoColors[record.estado] || '#6b7280';
-          
+
           html += `
             <div class="record-card" data-id="${record.id}" style="background-color: ${surfaceColor}; padding: 20px; border-radius: 12px; border: 2px solid transparent; transition: all 0.2s;">
               <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
@@ -293,12 +303,12 @@
             </div>
           `;
         });
-        
+
         html += `</div></div>`;
       }
-      
+
       container.innerHTML = html;
-      
+
       document.querySelectorAll('.record-card').forEach(card => {
         card.addEventListener('mouseenter', (e) => {
           e.currentTarget.style.borderColor = primaryColor;
@@ -311,36 +321,36 @@
           e.currentTarget.style.boxShadow = 'none';
         });
       });
-      
+
       document.querySelectorAll('.delete-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
           e.stopPropagation();
           const id = e.currentTarget.getAttribute('data-id');
-          
+
           const confirmBtn = e.currentTarget;
           const originalContent = confirmBtn.innerHTML;
           confirmBtn.innerHTML = '✓ Confirmar';
           confirmBtn.style.backgroundColor = '#ef4444';
           confirmBtn.style.color = 'white';
           confirmBtn.style.padding = '8px 12px';
-          
+
           const cancelTimeout = setTimeout(() => {
             confirmBtn.innerHTML = originalContent;
             confirmBtn.style.backgroundColor = 'transparent';
             confirmBtn.style.color = secondaryColor;
             confirmBtn.style.padding = '8px';
           }, 3000);
-          
+
           const confirmHandler = () => {
             clearTimeout(cancelTimeout);
             deleteRecord(id);
             renderApp();
           };
-          
+
           confirmBtn.onclick = confirmHandler;
         });
       });
-      
+
       document.querySelectorAll('.ticket-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
           e.stopPropagation();
@@ -361,7 +371,7 @@
       const secondaryColor = config.secondary_action_color;
       const fontFamily = config.font_family;
       const baseSize = config.font_size;
-      
+
       app.innerHTML = `
         <div class="w-full min-h-full" style="background-color: ${bgColor}; color: ${textColor}; font-family: ${fontFamily}, sans-serif; padding: 20px;">
           <div class="max-w-2xl mx-auto">
@@ -412,12 +422,12 @@
           </div>
         </div>
       `;
-      
+
       document.getElementById('btn-back').addEventListener('click', () => {
         currentView = 'list';
         renderApp();
       });
-      
+
       const submitBtn = document.getElementById('submit-btn');
       submitBtn.addEventListener('mouseenter', (e) => {
         e.target.style.transform = 'scale(1.02)';
@@ -425,10 +435,10 @@
       submitBtn.addEventListener('mouseleave', (e) => {
         e.target.style.transform = 'scale(1)';
       });
-      
+
       document.getElementById('vehiculo-form').addEventListener('submit', (e) => {
         e.preventDefault();
-        
+
         const vehiculoData = {
           tipo: 'vehiculo',
           fecha: new Date().toISOString(),
@@ -450,7 +460,7 @@
           total: 0,
           estado: ''
         };
-        
+
         createRecord(vehiculoData);
         currentView = 'list';
         renderApp();
@@ -466,9 +476,9 @@
       const secondaryColor = config.secondary_action_color;
       const fontFamily = config.font_family;
       const baseSize = config.font_size;
-      
+
       const vehiculos = allRecords.filter(r => r.tipo === 'vehiculo');
-      
+
       app.innerHTML = `
         <div class="w-full min-h-full" style="background-color: ${bgColor}; color: ${textColor}; font-family: ${fontFamily}, sans-serif; padding: 20px;">
           <div class="max-w-3xl mx-auto">
@@ -566,12 +576,12 @@
           </div>
         </div>
       `;
-      
+
       document.getElementById('btn-back').addEventListener('click', () => {
         currentView = 'list';
         renderApp();
       });
-      
+
       if (vehiculos.length === 0) {
         const btnRegistrar = document.getElementById('btn-registrar-vehiculo');
         if (btnRegistrar) {
@@ -582,14 +592,14 @@
         }
         return;
       }
-      
+
       const fechaInput = document.getElementById('fecha');
       fechaInput.valueAsDate = new Date();
-      
+
       const vehiculoSelect = document.getElementById('vehiculo-select');
       const vehiculoInfo = document.getElementById('vehiculo-info');
       const vehiculoDetails = document.getElementById('vehiculo-details');
-      
+
       vehiculoSelect.addEventListener('change', (e) => {
         const selectedId = e.target.value;
         if (selectedId) {
@@ -608,17 +618,17 @@
           vehiculoInfo.style.display = 'none';
         }
       });
-      
+
       function updateTotal() {
         const manoObra = parseFloat(document.getElementById('manoObra').value) || 0;
         const costoRepuestos = parseFloat(document.getElementById('costoRepuestos').value) || 0;
         const total = manoObra + costoRepuestos;
         document.getElementById('total-display').textContent = `$${total.toFixed(2)}`;
       }
-      
+
       document.getElementById('manoObra').addEventListener('input', updateTotal);
       document.getElementById('costoRepuestos').addEventListener('input', updateTotal);
-      
+
       const submitBtn = document.getElementById('submit-btn');
       submitBtn.addEventListener('mouseenter', (e) => {
         e.target.style.transform = 'scale(1.02)';
@@ -626,19 +636,19 @@
       submitBtn.addEventListener('mouseleave', (e) => {
         e.target.style.transform = 'scale(1)';
       });
-      
+
       document.getElementById('reparacion-form').addEventListener('submit', (e) => {
         e.preventDefault();
-        
+
         const selectedVehiculo = vehiculos.find(v => v.id === vehiculoSelect.value);
-        
+
         if (!selectedVehiculo) {
           return;
         }
-        
+
         const manoObra = parseFloat(document.getElementById('manoObra').value) || 0;
         const costoRepuestos = parseFloat(document.getElementById('costoRepuestos').value) || 0;
-        
+
         const reparacionData = {
           tipo: 'reparacion',
           fecha: new Date(document.getElementById('fecha').value).toISOString(),
@@ -660,7 +670,7 @@
           estado: document.getElementById('estado').value,
           kilometraje: ''
         };
-        
+
         createRecord(reparacionData);
         currentView = 'list';
         renderApp();
@@ -679,14 +689,14 @@
       const secondaryColor = config.secondary_action_color;
       const fontFamily = config.font_family;
       const baseSize = config.font_size;
-      
+
       const today = new Date();
       const currentMonth = selectedMonth;
       const currentYear = selectedYear;
-      
+
       // Obtener todas las reparaciones
       const reparaciones = allRecords.filter(r => r.tipo === 'reparacion');
-      
+
       // Agrupar reparaciones por fecha (sin ajuste de zona horaria)
       const reparacionesPorFecha = {};
       reparaciones.forEach(rep => {
@@ -697,55 +707,55 @@
         }
         reparacionesPorFecha[fecha].push(rep);
       });
-      
+
       // Filtrar reparaciones pendientes y en proceso
-      const reparacionesPendientes = reparaciones.filter(r => 
+      const reparacionesPendientes = reparaciones.filter(r =>
         r.estado === 'Pendiente' || r.estado === 'En Proceso'
       ).sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
-      
+
       // Generar días del mes
       const firstDay = new Date(currentYear, currentMonth, 1);
       const lastDay = new Date(currentYear, currentMonth + 1, 0);
       const daysInMonth = lastDay.getDate();
       const startingDayOfWeek = firstDay.getDay();
-      
+
       const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-                          'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-      
+        'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+
       let calendarHTML = '';
       let dayCounter = 1;
-      
+
       // Generar 6 semanas (máximo necesario para cualquier mes)
       for (let week = 0; week < 6; week++) {
-        calendarHTML += '<div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 4px;">';
-        
+        calendarHTML += '<div style="display: grid; grid-template-columns: repeat(7, minmax(40px, 1fr)); gap: 2px; margin-bottom: 2px;">';
+
         for (let day = 0; day < 7; day++) {
           const cellIndex = week * 7 + day;
-          
+
           if (cellIndex < startingDayOfWeek || dayCounter > daysInMonth) {
-            calendarHTML += `<div style="padding: 8px; min-height: 60px; background-color: ${bgColor}; border-radius: 6px; opacity: 0.3;"></div>`;
+            calendarHTML += `<div style="padding: 4px; md:padding: 8px; min-height: 50px; md:min-height: 60px; background-color: ${bgColor}; border-radius: 6px; opacity: 0.3;"></div>`;
           } else {
             const currentDate = new Date(currentYear, currentMonth, dayCounter);
             const dateStr = currentDate.toISOString().split('T')[0];
             const isToday = dayCounter === today.getDate() && currentMonth === today.getMonth() && currentYear === today.getFullYear();
             const hasEvents = reparacionesPorFecha[dateStr];
-            
+
             calendarHTML += `
-              <div style="padding: 8px; min-height: 60px; background-color: ${surfaceColor}; border-radius: 6px; border: 2px solid ${isToday ? primaryColor : 'transparent'}; position: relative; cursor: pointer;" class="calendar-day" data-date="${dateStr}">
-                <div style="font-size: ${baseSize * 0.75}px; font-weight: ${isToday ? 'bold' : 'normal'}; color: ${isToday ? primaryColor : textColor}; margin-bottom: 4px;">
+              <div style="padding: 4px; md:padding: 8px; min-height: 50px; md:min-height: 60px; background-color: ${surfaceColor}; border-radius: 6px; border: 2px solid ${isToday ? primaryColor : 'transparent'}; position: relative; cursor: pointer;" class="calendar-day" data-date="${dateStr}">
+                <div style="font-size: ${baseSize * 0.65}px; md:font-size: ${baseSize * 0.75}px; font-weight: ${isToday ? 'bold' : 'normal'}; color: ${isToday ? primaryColor : textColor}; margin-bottom: 2px;">
                   ${dayCounter}
                 </div>
                 ${hasEvents ? `
-                  <div style="display: flex; flex-wrap: wrap; gap: 2px;">
+                  <div style="display: flex; flex-wrap: wrap; gap: 1px;">
                     ${hasEvents.slice(0, 2).map(rep => {
-                      const estadoColors = {
-                        'En Proceso': '#f59e0b',
-                        'Completada': '#10b981',
-                        'Pendiente': '#ef4444'
-                      };
-                      return `<div style="width: 6px; height: 6px; border-radius: 50%; background-color: ${estadoColors[rep.estado]};"></div>`;
-                    }).join('')}
-                    ${hasEvents.length > 2 ? `<div style="font-size: 8px; color: ${textColor};">+${hasEvents.length - 2}</div>` : ''}
+              const estadoColors = {
+                'En Proceso': '#f59e0b',
+                'Completada': '#10b981',
+                'Pendiente': '#ef4444'
+              };
+              return `<div style="width: 4px; height: 4px; md:width: 6px; md:height: 6px; border-radius: 50%; background-color: ${estadoColors[rep.estado]};"></div>`;
+            }).join('')}
+                    ${hasEvents.length > 2 ? `<div style="font-size: 6px; color: ${textColor};">+${hasEvents.length - 2}</div>` : ''}
                   </div>
                 ` : ''}
               </div>
@@ -753,12 +763,12 @@
             dayCounter++;
           }
         }
-        
+
         calendarHTML += '</div>';
-        
+
         if (dayCounter > daysInMonth) break;
       }
-      
+
       app.innerHTML = `
         <div class="w-full min-h-full" style="background-color: ${bgColor}; color: ${textColor}; font-family: ${fontFamily}, sans-serif; padding: 20px;">
           <div class="max-w-6xl mx-auto">
@@ -767,16 +777,16 @@
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                 <h1 style="font-size: ${baseSize * 2}px; font-weight: bold;">📅 Agenda de Reparaciones</h1>
               </div>
-              <div style="display: flex; align-items: center; gap: 16px;">
-                <button id="btn-prev-month" style="background-color: ${surfaceColor}; color: ${textColor}; padding: 8px 16px; border-radius: 8px; font-size: ${baseSize}px; font-weight: 600; cursor: pointer; border: 2px solid ${primaryColor};">← Mes Anterior</button>
-                <div style="display: flex; gap: 12px; align-items: center;">
-                  <select id="month-select" style="padding: 8px 12px; border: 2px solid ${primaryColor}; border-radius: 8px; font-size: ${baseSize}px; color: ${textColor}; background-color: ${surfaceColor}; font-weight: 600;">
+              <div style="display: flex; flex-direction: column; md:flex-direction: row; align-items: start; md:align-items: center; gap: 8px; flex-wrap: wrap;">
+                <button id="btn-prev-month" style="background-color: ${surfaceColor}; color: ${textColor}; padding: 8px 12px; md:padding: 8px 16px; border-radius: 8px; font-size: ${baseSize * 0.8}px; md:font-size: ${baseSize}px; font-weight: 600; cursor: pointer; border: 2px solid ${primaryColor};">← Anterior</button>
+                <div style="display: flex; gap: 6px; md:gap: 12px; align-items: center; flex-wrap: wrap;">
+                  <select id="month-select" style="padding: 6px; md:padding: 8px 12px; border: 2px solid ${primaryColor}; border-radius: 8px; font-size: ${baseSize * 0.8}px; md:font-size: ${baseSize}px; color: ${textColor}; background-color: ${surfaceColor}; font-weight: 600;">
                     ${monthNames.map((name, idx) => `<option value="${idx}" ${idx === currentMonth ? 'selected' : ''}>${name}</option>`).join('')}
                   </select>
-                  <input type="number" id="year-input" value="${currentYear}" min="2000" max="2100" style="width: 100px; padding: 8px 12px; border: 2px solid ${primaryColor}; border-radius: 8px; font-size: ${baseSize}px; color: ${textColor}; background-color: ${surfaceColor}; font-weight: 600;">
+                  <input type="number" id="year-input" value="${currentYear}" min="2000" max="2100" style="width: 70px; md:width: 100px; padding: 6px; md:padding: 8px 12px; border: 2px solid ${primaryColor}; border-radius: 8px; font-size: ${baseSize * 0.8}px; md:font-size: ${baseSize}px; color: ${textColor}; background-color: ${surfaceColor}; font-weight: 600;">
                 </div>
-                <button id="btn-next-month" style="background-color: ${surfaceColor}; color: ${textColor}; padding: 8px 16px; border-radius: 8px; font-size: ${baseSize}px; font-weight: 600; cursor: pointer; border: 2px solid ${primaryColor};">Mes Siguiente →</button>
-                <button id="btn-today" style="background-color: ${primaryColor}; color: white; padding: 8px 16px; border-radius: 8px; font-size: ${baseSize * 0.9}px; font-weight: 600; cursor: pointer;">Hoy</button>
+                <button id="btn-next-month" style="background-color: ${surfaceColor}; color: ${textColor}; padding: 8px 12px; md:padding: 8px 16px; border-radius: 8px; font-size: ${baseSize * 0.8}px; md:font-size: ${baseSize}px; font-weight: 600; cursor: pointer; border: 2px solid ${primaryColor};">Siguiente →</button>
+                <button id="btn-today" style="background-color: ${primaryColor}; color: white; padding: 8px 12px; md:padding: 8px 16px; border-radius: 8px; font-size: ${baseSize * 0.8}px; md:font-size: ${baseSize * 0.9}px; font-weight: 600; cursor: pointer;">Hoy</button>
               </div>
             </div>
             
@@ -784,9 +794,9 @@
               <!-- Calendario -->
               <div class="lg:col-span-2" style="background-color: ${surfaceColor}; padding: 20px; border-radius: 12px;">
                 <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 12px;">
-                  ${['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sab'].map(day => 
-                    `<div style="text-align: center; font-size: ${baseSize * 0.85}px; font-weight: 600; color: ${textColor}; padding: 8px;">${day}</div>`
-                  ).join('')}
+                  ${['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sab'].map(day =>
+        `<div style="text-align: center; font-size: ${baseSize * 0.85}px; font-weight: 600; color: ${textColor}; padding: 8px;">${day}</div>`
+      ).join('')}
                 </div>
                 
                 ${calendarHTML}
@@ -794,7 +804,9 @@
               
               <!-- Panel de próximas reparaciones -->
               <div style="background-color: ${surfaceColor}; padding: 20px; border-radius: 12px; height: fit-content;">
-                <h2 style="font-size: ${baseSize * 1.3}px; font-weight: 600; margin-bottom: 16px; color: ${textColor};">🔔 Próximas Reparaciones</h2>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                  <h2 style="font-size: ${baseSize * 1.3}px; font-weight: 600; color: ${textColor};">🔔 Próximas Reparaciones</h2>
+                </div>
                 
                 ${reparacionesPendientes.length === 0 ? `
                   <div style="text-align: center; padding: 32px 0;">
@@ -804,19 +816,22 @@
                 ` : `
                   <div class="space-y-3" style="max-height: 500px; overflow-y: auto;">
                     ${reparacionesPendientes.map(rep => {
-                      const estadoColors = {
-                        'En Proceso': '#f59e0b',
-                        'Completada': '#10b981',
-                        'Pendiente': '#ef4444'
-                      };
-                      const diasRestantes = Math.ceil((new Date(rep.fecha) - today) / (1000 * 60 * 60 * 24));
-                      const esUrgente = diasRestantes <= 3 && diasRestantes >= 0;
-                      
-                      return `
-                        <div style="padding: 12px; background-color: ${bgColor}; border-radius: 8px; border-left: 4px solid ${estadoColors[rep.estado]};">
+        const estadoColors = {
+          'En Proceso': '#f59e0b',
+          'Completada': '#10b981',
+          'Pendiente': '#ef4444'
+        };
+        const diasRestantes = Math.ceil((new Date(rep.fecha) - today) / (1000 * 60 * 60 * 24));
+        const esUrgente = diasRestantes <= 3 && diasRestantes >= 0;
+
+        return `
+                        <div class="reminder-item" data-id="${rep.id}" style="padding: 12px; background-color: ${bgColor}; border-radius: 8px; border-left: 4px solid ${estadoColors[rep.estado]}; position: relative;">
                           <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 6px;">
-                            <div style="font-size: ${baseSize * 0.9}px; font-weight: 600; color: ${textColor};">${rep.placa}</div>
-                            ${esUrgente ? `<span style="background-color: #ef4444; color: white; padding: 2px 8px; border-radius: 12px; font-size: ${baseSize * 0.7}px;">¡Próximo!</span>` : ''}
+                            <div style="flex: 1;">
+                              <div style="font-size: ${baseSize * 0.9}px; font-weight: 600; color: ${textColor};">${rep.placa}</div>
+                              ${esUrgente ? `<span style="background-color: #ef4444; color: white; padding: 2px 8px; border-radius: 12px; font-size: ${baseSize * 0.7}px; display: inline-block; margin-top: 4px;">¡Próximo!</span>` : ''}
+                            </div>
+                            <button class="delete-individual-reminder" data-id="${rep.id}" style="background: none; border: none; color: ${secondaryColor}; font-size: ${baseSize}px; cursor: pointer; padding: 4px 8px; opacity: 0.7; transition: all 0.2s;">🗑️</button>
                           </div>
                           <div style="font-size: ${baseSize * 0.8}px; color: ${textColor}; opacity: 0.8; margin-bottom: 4px;">
                             ${rep.marca} ${rep.modelo}
@@ -832,28 +847,28 @@
                           </div>
                         </div>
                       `;
-                    }).join('')}
+      }).join('')}
                   </div>
                 `}
               </div>
             </div>
             
             <!-- Modal de detalles del día -->
-            <div id="day-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; padding: 20px;">
-              <div style="background-color: ${surfaceColor}; padding: 24px; border-radius: 12px; max-width: 600px; width: 100%; max-height: 80%; overflow-y: auto; position: relative;">
-                <button id="close-modal" style="position: absolute; top: 16px; right: 16px; font-size: ${baseSize * 1.5}px; color: ${secondaryColor}; background: none; border: none; cursor: pointer;">×</button>
-                <div id="modal-content"></div>
+            <div id="day-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; padding: 12px; md:padding: 20px;">
+              <div style="background-color: ${surfaceColor}; padding: 16px; md:padding: 24px; border-radius: 12px; max-width: 600px; width: 100%; max-height: 80vh; overflow-y: auto; position: relative;">
+                <button id="close-modal" style="position: absolute; top: 12px; md:top: 16px; right: 12px; md:right: 16px; font-size: ${baseSize * 1.5}px; color: ${secondaryColor}; background: none; border: none; cursor: pointer;">×</button>
+                <div id="modal-content" style="padding-right: 20px;"></div>
               </div>
             </div>
           </div>
         </div>
       `;
-      
+
       document.getElementById('btn-back').addEventListener('click', () => {
         currentView = 'list';
         renderApp();
       });
-      
+
       // Navegación del calendario
       document.getElementById('btn-prev-month').addEventListener('click', () => {
         selectedMonth--;
@@ -863,7 +878,7 @@
         }
         renderApp();
       });
-      
+
       document.getElementById('btn-next-month').addEventListener('click', () => {
         selectedMonth++;
         if (selectedMonth > 11) {
@@ -872,19 +887,19 @@
         }
         renderApp();
       });
-      
+
       document.getElementById('btn-today').addEventListener('click', () => {
         const now = new Date();
         selectedMonth = now.getMonth();
         selectedYear = now.getFullYear();
         renderApp();
       });
-      
+
       document.getElementById('month-select').addEventListener('change', (e) => {
         selectedMonth = parseInt(e.target.value);
         renderApp();
       });
-      
+
       document.getElementById('year-input').addEventListener('change', (e) => {
         const year = parseInt(e.target.value);
         if (year >= 2000 && year <= 2100) {
@@ -892,20 +907,58 @@
           renderApp();
         }
       });
-      
+
+      // Botones para eliminar recordatorios individuales
+      document.querySelectorAll('.delete-individual-reminder').forEach(btn => {
+        btn.addEventListener('mouseenter', (e) => {
+          e.target.style.opacity = '1';
+          e.target.style.transform = 'scale(1.2)';
+        });
+        btn.addEventListener('mouseleave', (e) => {
+          e.target.style.opacity = '0.7';
+          e.target.style.transform = 'scale(1)';
+        });
+
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const id = e.currentTarget.getAttribute('data-id');
+          const reminderItem = document.querySelector(`.reminder-item[data-id="${id}"]`);
+
+          const confirmBtn = e.currentTarget;
+          const originalContent = confirmBtn.innerHTML;
+          confirmBtn.innerHTML = '✓';
+          confirmBtn.style.backgroundColor = '#dc2626';
+          confirmBtn.style.opacity = '1';
+
+          const cancelTimeout = setTimeout(() => {
+            confirmBtn.innerHTML = originalContent;
+            confirmBtn.style.backgroundColor = 'transparent';
+            confirmBtn.style.opacity = '0.7';
+          }, 3000);
+
+          const confirmHandler = () => {
+            clearTimeout(cancelTimeout);
+            deleteRecord(id);
+            renderApp();
+          };
+
+          confirmBtn.onclick = confirmHandler;
+        });
+      });
+
       // Agregar eventos a los días del calendario
       document.querySelectorAll('.calendar-day').forEach(dayEl => {
         dayEl.addEventListener('click', (e) => {
           const dateStr = e.currentTarget.getAttribute('data-date');
           const reparacionesDelDia = reparacionesPorFecha[dateStr];
-          
+
           if (reparacionesDelDia && reparacionesDelDia.length > 0) {
             showDayModal(dateStr, reparacionesDelDia);
           } else if (dateStr) {
             showReminderForm(dateStr);
           }
         });
-        
+
         dayEl.addEventListener('mouseenter', (e) => {
           const dateStr = e.currentTarget.getAttribute('data-date');
           if (dateStr) {
@@ -913,84 +966,75 @@
             e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)';
           }
         });
-        
+
         dayEl.addEventListener('mouseleave', (e) => {
           e.currentTarget.style.transform = 'scale(1)';
           e.currentTarget.style.boxShadow = 'none';
         });
       });
-      
+
       function showReminderForm(dateStr) {
         const modal = document.getElementById('day-modal');
         const modalContent = document.getElementById('modal-content');
         const fecha = new Date(dateStr + 'T12:00:00');
         const vehiculos = allRecords.filter(r => r.tipo === 'vehiculo');
-        
+
         modalContent.innerHTML = `
-          <h3 style="font-size: ${baseSize * 1.5}px; font-weight: 600; margin-bottom: 8px; color: ${textColor};">
+          <h3 style="font-size: ${baseSize * 1.3}px; md:font-size: ${baseSize * 1.5}px; font-weight: 600; margin-bottom: 8px; color: ${textColor};">
             📅 Nuevo Recordatorio
           </h3>
-          <p style="font-size: ${baseSize * 0.9}px; color: ${textColor}; opacity: 0.7; margin-bottom: 16px;">
+          <p style="font-size: ${baseSize * 0.8}px; md:font-size: ${baseSize * 0.9}px; color: ${textColor}; opacity: 0.7; margin-bottom: 12px; md:margin-bottom: 16px;">
             ${fecha.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
           </p>
           
-          <form id="reminder-form" style="margin-top: 16px;">
-            <div style="margin-bottom: 16px;">
-              <label for="reminder-vehiculo" style="display: block; font-size: ${baseSize * 0.9}px; font-weight: 600; margin-bottom: 8px; color: ${textColor};">Vehículo *</label>
-              <select id="reminder-vehiculo" required style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: ${baseSize}px; color: ${textColor}; background-color: white;">
-                <option value="">-- Seleccione un vehículo --</option>
+          <form id="reminder-form" style="margin-top: 12px; md:margin-top: 16px;">
+            <div style="margin-bottom: 12px; md:margin-bottom: 16px;">
+              <label for="reminder-vehiculo" style="display: block; font-size: ${baseSize * 0.8}px; md:font-size: ${baseSize * 0.9}px; font-weight: 600; margin-bottom: 6px; md:margin-bottom: 8px; color: ${textColor};">Vehículo *</label>
+              <select id="reminder-vehiculo" required style="width: 100%; padding: 10px; md:padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: ${baseSize * 0.8}px; md:font-size: ${baseSize}px; color: ${textColor}; background-color: white;">
+                <option value="">-- Seleccione --</option>
                 ${vehiculos.map(v => `
                   <option value="${v.id}">${v.placa} - ${v.marca} ${v.modelo} (${v.cliente})</option>
                 `).join('')}
               </select>
             </div>
             
-            <div id="vehiculo-info-reminder" style="display: none; background-color: ${bgColor}; padding: 12px; border-radius: 8px; font-size: ${baseSize * 0.85}px; margin-bottom: 16px;">
+            <div id="vehiculo-info-reminder" style="display: none; background-color: ${bgColor}; padding: 10px; md:padding: 12px; border-radius: 8px; font-size: ${baseSize * 0.8}px; margin-bottom: 12px; md:margin-bottom: 16px;">
               <div id="vehiculo-details-reminder" style="color: ${textColor}; opacity: 0.8;"></div>
             </div>
             
-            <div style="margin-bottom: 16px;">
-              <label for="reminder-mecanico" style="display: block; font-size: ${baseSize * 0.9}px; font-weight: 600; margin-bottom: 8px; color: ${textColor};">Mecánico Asignado *</label>
-              <input type="text" id="reminder-mecanico" required style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: ${baseSize}px; color: ${textColor};">
+            <div style="margin-bottom: 12px; md:margin-bottom: 16px;">
+              <label for="reminder-mecanico" style="display: block; font-size: ${baseSize * 0.8}px; md:font-size: ${baseSize * 0.9}px; font-weight: 600; margin-bottom: 6px; md:margin-bottom: 8px; color: ${textColor};">Mecánico Asignado *</label>
+              <input type="text" id="reminder-mecanico" required style="width: 100%; padding: 10px; md:padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: ${baseSize * 0.8}px; md:font-size: ${baseSize}px; color: ${textColor};">
             </div>
             
-            <div style="margin-bottom: 16px;">
-              <label for="reminder-descripcion" style="display: block; font-size: ${baseSize * 0.9}px; font-weight: 600; margin-bottom: 8px; color: ${textColor};">Descripción del Servicio *</label>
-              <textarea id="reminder-descripcion" required rows="3" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: ${baseSize}px; color: ${textColor}; resize: vertical;"></textarea>
+            <div style="margin-bottom: 12px; md:margin-bottom: 16px;">
+              <label for="reminder-descripcion" style="display: block; font-size: ${baseSize * 0.8}px; md:font-size: ${baseSize * 0.9}px; font-weight: 600; margin-bottom: 6px; md:margin-bottom: 8px; color: ${textColor};">Descripción del Servicio *</label>
+              <textarea id="reminder-descripcion" required rows="3" style="width: 100%; padding: 10px; md:padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: ${baseSize * 0.8}px; md:font-size: ${baseSize}px; color: ${textColor}; resize: vertical;"></textarea>
             </div>
             
-            <div style="margin-bottom: 16px;">
-              <label for="reminder-diagnostico" style="display: block; font-size: ${baseSize * 0.9}px; font-weight: 600; margin-bottom: 8px; color: ${textColor};">Diagnóstico/Notas</label>
-              <textarea id="reminder-diagnostico" rows="2" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: ${baseSize}px; color: ${textColor}; resize: vertical;"></textarea>
+            <div style="margin-bottom: 12px; md:margin-bottom: 16px;">
+              <label for="reminder-diagnostico" style="display: block; font-size: ${baseSize * 0.8}px; md:font-size: ${baseSize * 0.9}px; font-weight: 600; margin-bottom: 6px; md:margin-bottom: 8px; color: ${textColor};">Diagnóstico/Notas</label>
+              <textarea id="reminder-diagnostico" rows="2" style="width: 100%; padding: 10px; md:padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: ${baseSize * 0.8}px; md:font-size: ${baseSize}px; color: ${textColor}; resize: vertical;"></textarea>
             </div>
             
-            <div style="margin-bottom: 16px;">
-              <label for="reminder-estado" style="display: block; font-size: ${baseSize * 0.9}px; font-weight: 600; margin-bottom: 8px; color: ${textColor};">Estado *</label>
-              <select id="reminder-estado" required style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: ${baseSize}px; color: ${textColor}; background-color: white;">
-                <option value="Pendiente">Pendiente</option>
-                <option value="En Proceso">En Proceso</option>
-                <option value="Completada">Completada</option>
-              </select>
-            </div>
-            
-            <div style="display: flex; gap: 12px;">
-              <button type="button" id="cancel-reminder" style="flex: 1; background-color: ${secondaryColor}; color: white; padding: 12px; border-radius: 8px; font-size: ${baseSize}px; font-weight: 600; cursor: pointer;">
+            <div style="display: flex; gap: 8px; md:gap: 12px;">
+              <button type="button" id="cancel-reminder" style="flex: 1; background-color: ${secondaryColor}; color: white; padding: 10px; md:padding: 12px; border-radius: 8px; font-size: ${baseSize * 0.8}px; md:font-size: ${baseSize}px; font-weight: 600; cursor: pointer;">
                 Cancelar
               </button>
-              <button type="submit" style="flex: 1; background-color: ${primaryColor}; color: white; padding: 12px; border-radius: 8px; font-size: ${baseSize}px; font-weight: 600; cursor: pointer;">
-                Guardar Recordatorio
+              <button type="submit" style="flex: 1; background-color: ${primaryColor}; color: white; padding: 10px; md:padding: 12px; border-radius: 8px; font-size: ${baseSize * 0.8}px; md:font-size: ${baseSize}px; font-weight: 600; cursor: pointer;">
+                Guardar
               </button>
             </div>
           </form>
         `;
-        
+
         modal.style.display = 'flex';
-        
+
         // Manejo de selección de vehículo
         const vehiculoSelect = document.getElementById('reminder-vehiculo');
         const vehiculoInfo = document.getElementById('vehiculo-info-reminder');
         const vehiculoDetails = document.getElementById('vehiculo-details-reminder');
-        
+
         vehiculoSelect.addEventListener('change', (e) => {
           const selectedId = e.target.value;
           if (selectedId) {
@@ -1008,22 +1052,22 @@
             vehiculoInfo.style.display = 'none';
           }
         });
-        
+
         // Manejo de cancelación
         document.getElementById('cancel-reminder').addEventListener('click', () => {
           modal.style.display = 'none';
         });
-        
+
         // Manejo de envío del formulario
         document.getElementById('reminder-form').addEventListener('submit', (e) => {
           e.preventDefault();
-          
+
           const selectedVehiculo = vehiculos.find(v => v.id === vehiculoSelect.value);
-          
+
           if (!selectedVehiculo) {
             return;
           }
-          
+
           const reparacionData = {
             tipo: 'reparacion',
             fecha: new Date(dateStr + 'T12:00:00').toISOString(),
@@ -1042,75 +1086,80 @@
             manoObra: 0,
             costoRepuestos: 0,
             total: 0,
-            estado: document.getElementById('reminder-estado').value,
+            estado: 'Pendiente',
             kilometraje: ''
           };
-          
+
           createRecord(reparacionData);
           modal.style.display = 'none';
-          
+
           // Volver a renderizar la agenda para mostrar el nuevo recordatorio
           renderApp();
         });
       }
-      
+
       function showDayModal(dateStr, reparaciones) {
         const modal = document.getElementById('day-modal');
         const modalContent = document.getElementById('modal-content');
         const fecha = new Date(dateStr + 'T12:00:00');
-        
+
         modalContent.innerHTML = `
-          <h3 style="font-size: ${baseSize * 1.5}px; font-weight: 600; margin-bottom: 16px; color: ${textColor};">
-            📅 ${fecha.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+          <h3 style="font-size: ${baseSize * 1.3}px; md:font-size: ${baseSize * 1.5}px; font-weight: 600; margin-bottom: 12px; md:margin-bottom: 16px; color: ${textColor};">
+            📅 ${fecha.toLocaleDateString('es-ES', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}
           </h3>
           
-          <div style="font-size: ${baseSize * 0.9}px; color: ${textColor}; margin-bottom: 16px; opacity: 0.7;">
-            ${reparaciones.length} ${reparaciones.length === 1 ? 'reparación programada' : 'reparaciones programadas'}
+          <div style="font-size: ${baseSize * 0.8}px; md:font-size: ${baseSize * 0.9}px; color: ${textColor}; margin-bottom: 12px; md:margin-bottom: 16px; opacity: 0.7;">
+            ${reparaciones.length} ${reparaciones.length === 1 ? 'reparación' : 'reparaciones'}
           </div>
           
-          <div class="space-y-3">
+          <div class="space-y-2" style="display: flex; flex-direction: column; gap: 8px; md:gap: 12px;">
             ${reparaciones.map(rep => {
-              const estadoColors = {
-                'En Proceso': '#f59e0b',
-                'Completada': '#10b981',
-                'Pendiente': '#ef4444'
-              };
-              
-              return `
-                <div style="padding: 16px; background-color: ${bgColor}; border-radius: 8px; border-left: 4px solid ${estadoColors[rep.estado]};">
-                  <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+          const estadoColors = {
+            'En Proceso': '#f59e0b',
+            'Completada': '#10b981',
+            'Pendiente': '#ef4444'
+          };
+
+          return `
+                <div style="padding: 10px; md:padding: 16px; background-color: ${bgColor}; border-radius: 8px; border-left: 4px solid ${estadoColors[rep.estado]};">
+                  <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 6px; md:margin-bottom: 8px; gap: 4px;">
                     <div>
-                      <div style="font-size: ${baseSize * 1.1}px; font-weight: 600; color: ${textColor}; margin-bottom: 4px;">
+                      <div style="font-size: ${baseSize * 0.95}px; md:font-size: ${baseSize * 1.1}px; font-weight: 600; color: ${textColor}; margin-bottom: 2px; md:margin-bottom: 4px; word-break: break-word;">
                         ${rep.placa} - ${rep.marca} ${rep.modelo}
                       </div>
-                      <span style="background-color: ${estadoColors[rep.estado]}; color: white; padding: 4px 12px; border-radius: 16px; font-size: ${baseSize * 0.75}px; font-weight: 600;">
+                      <span style="background-color: ${estadoColors[rep.estado]}; color: white; padding: 2px; md:padding: 4px 12px; border-radius: 16px; font-size: ${baseSize * 0.7}px; md:font-size: ${baseSize * 0.75}px; font-weight: 600; display: inline-block;">
                         ${rep.estado}
                       </span>
                     </div>
                   </div>
                   
-                  <div style="font-size: ${baseSize * 0.85}px; color: ${textColor}; opacity: 0.8; margin-top: 8px;">
-                    <div style="margin-bottom: 4px;">👤 Cliente: ${rep.cliente}</div>
-                    <div style="margin-bottom: 4px;">📞 Teléfono: ${rep.telefono}</div>
-                    <div style="margin-bottom: 4px;">🔧 Mecánico: ${rep.mecanico}</div>
-                    <div style="margin-bottom: 8px;">💰 Total: $${rep.total.toFixed(2)}</div>
+                  <div style="font-size: ${baseSize * 0.75}px; md:font-size: ${baseSize * 0.85}px; color: ${textColor}; opacity: 0.8; margin-top: 6px; md:margin-top: 8px;">
+                    <div style="margin-bottom: 2px; md:margin-bottom: 4px;">👤 ${rep.cliente}</div>
+                    <div style="margin-bottom: 2px; md:margin-bottom: 4px;">📞 ${rep.telefono}</div>
+                    <div style="margin-bottom: 2px; md:margin-bottom: 4px;">🔧 ${rep.mecanico}</div>
+                    <div style="margin-bottom: 6px; md:margin-bottom: 8px;"> -$${rep.total.toFixed(2)}</div>
                   </div>
                   
-                  <div style="font-size: ${baseSize * 0.85}px; color: ${textColor}; margin-top: 8px; padding-top: 8px; border-top: 1px solid ${textColor}33;">
-                    <strong>Descripción:</strong> ${rep.descripcion}
+                  <div style="font-size: ${baseSize * 0.75}px; md:font-size: ${baseSize * 0.85}px; color: ${textColor}; margin-top: 6px; md:margin-top: 8px; padding-top: 6px; md:padding-top: 8px; border-top: 1px solid ${textColor}33; word-break: break-word;">
+                    <strong>Problema:</strong> ${rep.descripcion}
                   </div>
                   
-                  <button class="ver-ticket-btn" data-id="${rep.id}" style="width: 100%; margin-top: 12px; background-color: ${primaryColor}; color: white; padding: 10px; border-radius: 8px; font-size: ${baseSize * 0.85}px; font-weight: 600; cursor: pointer;">
-                    📄 Ver Ticket Completo
-                  </button>
+                  <div style="display: flex; gap: 6px; md:gap: 8px; margin-top: 8px; md:margin-top: 12px;">
+                    <button class="ver-ticket-btn" data-id="${rep.id}" style="flex: 1; background-color: ${primaryColor}; color: white; padding: 8px; md:padding: 10px; border-radius: 8px; font-size: ${baseSize * 0.75}px; md:font-size: ${baseSize * 0.85}px; font-weight: 600; cursor: pointer;">
+                      📄 Ver Ticket
+                    </button>
+                    <button class="eliminar-recordatorio-btn" data-id="${rep.id}" style="background-color: #ef4444; color: white; padding: 8px; md:padding: 10px; border-radius: 8px; font-size: ${baseSize * 0.75}px; md:font-size: ${baseSize * 0.85}px; font-weight: 600; cursor: pointer;">
+                      🗑️
+                    </button>
+                  </div>
                 </div>
               `;
-            }).join('')}
+        }).join('')}
           </div>
         `;
-        
+
         modal.style.display = 'flex';
-        
+
         document.querySelectorAll('.ver-ticket-btn').forEach(btn => {
           btn.addEventListener('click', (e) => {
             const id = e.currentTarget.getAttribute('data-id');
@@ -1119,12 +1168,35 @@
             renderApp();
           });
         });
+
+        document.querySelectorAll('.eliminar-recordatorio-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const id = e.currentTarget.getAttribute('data-id');
+            const confirmBtn = e.currentTarget;
+            const originalContent = confirmBtn.innerHTML;
+            confirmBtn.innerHTML = '✓ Confirmar';
+            confirmBtn.style.backgroundColor = '#dc2626';
+
+            const cancelTimeout = setTimeout(() => {
+              confirmBtn.innerHTML = originalContent;
+              confirmBtn.style.backgroundColor = '#ef4444';
+            }, 3000);
+
+            const confirmHandler = () => {
+              clearTimeout(cancelTimeout);
+              deleteRecord(id);
+              renderApp();
+            };
+
+            confirmBtn.onclick = confirmHandler;
+          });
+        });
       }
-      
+
       document.getElementById('close-modal').addEventListener('click', () => {
         document.getElementById('day-modal').style.display = 'none';
       });
-      
+
       document.getElementById('day-modal').addEventListener('click', (e) => {
         if (e.target.id === 'day-modal') {
           document.getElementById('day-modal').style.display = 'none';
@@ -1139,13 +1211,13 @@
       const primaryColor = config.primary_action_color;
       const fontFamily = config.font_family;
       const baseSize = config.font_size;
-      
+
       if (!currentRecord) {
         currentView = 'list';
         renderApp();
         return;
       }
-      
+
       app.innerHTML = `
         <div class="w-full min-h-full" style="background-color: ${bgColor}; padding: 20px; font-family: ${fontFamily}, sans-serif;">
           <div class="max-w-4xl mx-auto">
@@ -1227,13 +1299,13 @@
           </div>
         </div>
       `;
-      
+
       document.getElementById('btn-back').addEventListener('click', () => {
         currentView = 'list';
         currentRecord = null;
         renderApp();
       });
-      
+
       document.getElementById('btn-print').addEventListener('click', () => {
         window.print();
       });
@@ -1246,5 +1318,7 @@
       init();
     }
   </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9b84cf5010d39925',t:'MTc2NzQ2NzU2OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+  <script>(function () { function c() { var b = a.contentDocument || a.contentWindow.document; if (b) { var d = b.createElement('script'); d.innerHTML = "window.__CF$cv$params={r:'9c934339b72f3c4e',t:'MTc3MDMwMzQ3MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);"; b.getElementsByTagName('head')[0].appendChild(d) } } if (document.body) { var a = document.createElement('iframe'); a.height = 1; a.width = 1; a.style.position = 'absolute'; a.style.top = 0; a.style.left = 0; a.style.border = 'none'; a.style.visibility = 'hidden'; document.body.appendChild(a); if ('loading' !== document.readyState) c(); else if (window.addEventListener) document.addEventListener('DOMContentLoaded', c); else { var e = document.onreadystatechange || function () { }; document.onreadystatechange = function (b) { e(b); 'loading' !== document.readyState && (document.onreadystatechange = e, c()) } } } })();</script>
+</body>
+
 </html>
